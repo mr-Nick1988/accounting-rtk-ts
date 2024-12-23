@@ -62,29 +62,25 @@ export const updateUser = createAsyncThunk<UserProfile, UserData, { state: RootS
     }
 )
 
-export const changePassword = createAsyncThunk<
-    string, { oldPassword: string, newPassword: string, securityAnswers: string[] }, { state: RootState }>(
-    'user/password',
+export const changePassword = createAsyncThunk<string, { oldPassword: string, newPassword: string }, { state: RootState }>(
+    'user/changePassword',
+    async ({ oldPassword, newPassword }, { getState }) => {
+        const username = getState().user.login;
 
-    async ({ oldPassword, newPassword, securityAnswers }, { getState }) => {
-
-        const response = await fetch(`${base_url}/user/password`, {
+        const authHeader = createToken(username,oldPassword)
+        const response = await fetch(`${base_url}/account/user/password`, {
             method: 'PUT',
             headers: {
-                Authorization: getState().token,
-                'Content-Type': 'application/json',
+                Authorization: authHeader,
+                'X-Password': newPassword,
             },
-            body: JSON.stringify({
-                oldPassword,
-                newPassword,
-                securityAnswers,
-            }),
         });
 
         if (!response.ok) {
-            throw new Error('Something went wrong while changing password');
+            throw new Error('Failed to change password');
         }
+        return 'Password changed successfully';
+    }
+);
 
-        return createToken(getState().user.login, newPassword);
-    })
 

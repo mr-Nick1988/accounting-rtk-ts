@@ -2,8 +2,6 @@ import  {useState} from "react";
 import {useAppDispatch} from "../../app/hooks.ts";
 import {changePassword} from "../../features/api/accountApi.ts";
 
-
-
 interface Props {
     close: () => void;
 }
@@ -12,27 +10,14 @@ const ChangePassword = ({ close }: Props) => {
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [securityAnswers, setSecurityAnswers] = useState<string[]>(['', '']); // Ответы на вопросы безопасности
     const [errorMessage, setErrorMessage] = useState('');
     const [oldPasswordConfirmed, setOldPasswordConfirmed] = useState(false);
     const dispatch = useAppDispatch();
-
-    const securityQuestions = [
-        "What is your favorite color?",
-        "What city were you born in?"
-    ];
-
-    const handleChangeSecurityAnswer = (index: number, answer: string) => {
-        const updatedAnswers = [...securityAnswers];
-        updatedAnswers[index] = answer;
-        setSecurityAnswers(updatedAnswers);
-    };
 
     const handleClickClear = () => {
         setNewPassword('');
         setConfirmPassword('');
         setOldPassword('');
-        setSecurityAnswers(['', '']);
         setErrorMessage('');
         setOldPasswordConfirmed(false);
     };
@@ -48,21 +33,13 @@ const ChangePassword = ({ close }: Props) => {
             return;
         }
 
-        // Проверка на пустые ответы на вопросы безопасности
-        if (securityAnswers.includes('')) {
-            setErrorMessage('Please answer all security questions.');
-            return;
-        }
-
         setErrorMessage('');
 
         try {
-
-            await dispatch(changePassword({ oldPassword, newPassword, securityAnswers }));
-
+            await dispatch(changePassword({ oldPassword, newPassword }));
             close();
         } catch (error) {
-            setErrorMessage('Failed to change password.');
+            setErrorMessage('Failed to change password. Please try again.');
         }
     };
 
@@ -77,18 +54,6 @@ const ChangePassword = ({ close }: Props) => {
                 />
             </label>
             <br />
-
-            {securityQuestions.map((question, index) => (
-                <div key={index}>
-                    <label>{question}</label>
-                    <input
-                        type="text"
-                        onChange={(e) => handleChangeSecurityAnswer(index, e.target.value)}
-                        value={securityAnswers[index]}
-                        placeholder="Answer to the security question"
-                    />
-                </div>
-            ))}
 
             <label>New Password:
                 <input
@@ -119,6 +84,4 @@ const ChangePassword = ({ close }: Props) => {
 };
 
 export default ChangePassword;
-
-
 
